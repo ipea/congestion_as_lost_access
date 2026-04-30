@@ -1,3 +1,4 @@
+# pak::pak("davidsjoberg/ggbump")
 
 library(tidyverse)
 library(ggbump)
@@ -5,7 +6,6 @@ library(patchwork)
 library(data.table)
 
 # Colors
-
 color_palette <- viridisLite::mako(11)
 description_color <- 'grey40'
 cities_colors <- c(
@@ -23,18 +23,20 @@ cities_colors <- c(
 cities_rank_acessibilidade <- fread("./data/resultado_acessibilidade.csv", encoding = 'Latin-1') |>
   mutate(ordem=1)
 
-cities_rank_censo <- fread("./data/resultado_censo2010.csv") |>
-  mutate(rank = row_number(desc(media_tempo)),
-         ordem = 2,
-         cidade = case_when(COD_MUN == 2304400 ~ "Fortaleza",
-                            COD_MUN == 2611606 ~ "Recife",
-                            COD_MUN == 2927408 ~ "Salvador",
-                            COD_MUN == 3106200 ~ "Belo Horizonte",
-                            COD_MUN == 3304557 ~ "Rio de Janeiro",
-                            COD_MUN == 3550308 ~ "São Paulo",
-                            COD_MUN == 4106902 ~ "Curitiba",
-                            COD_MUN == 4314902 ~ "Porto Alegre",
-                            COD_MUN == 5300108 ~ "Brasília"))
+cities_rank_censo <- fread("./data/resultado_censo2022.csv") |>
+  mutate(cidade = case_when(code_muni == 2304400 ~ "Fortaleza",
+                            code_muni == 2611606 ~ "Recife",
+                            code_muni == 2927408 ~ "Salvador",
+                            code_muni == 3106200 ~ "Belo Horizonte",
+                            code_muni == 3304557 ~ "Rio de Janeiro",
+                            code_muni == 3550308 ~ "São Paulo",
+                            code_muni == 4106902 ~ "Curitiba",
+                            code_muni == 4314902 ~ "Porto Alegre",
+                            code_muni == 5300108 ~ "Brasília")) |>
+  filter(!is.na(cidade)) |>
+  mutate(rank = row_number(desc(avg_commute_time)),
+         ordem = 2)
+
 
 cities_rank_censo <- cities_rank_censo |>
   select("rank","cidade","ordem")
@@ -43,6 +45,8 @@ cities_rank_tomtom <- fread("./data/resultado_tomtom.csv", encoding = 'Latin-1')
   mutate(ordem=3)
 
 cities_rank_geral <- rbind(cities_rank_acessibilidade,cities_rank_censo,cities_rank_tomtom) #|>
+
+
 
 bump_chart_basic <- cities_rank_geral |>
   ggplot(aes(ordem, rank, col = cidade)) +
